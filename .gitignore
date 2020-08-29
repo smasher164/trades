@@ -1,0 +1,11 @@
+# Ignore everything
+*
+# Whitelist subdirectories
+!*/
+
+# Whitelist the following files and extensions
+!*.go
+!*.md
+!.gitignore
+!go.mod
+!go.sum
