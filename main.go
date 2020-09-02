@@ -119,6 +119,25 @@ func (t *trades) sell(u uuid.UUID, m *sync.Mutex, users map[uuid.UUID]map[string
 	return nil
 }
 
+func (t *trades) holdings(u uuid.UUID, m *sync.Mutex, users map[uuid.UUID]map[string]int, w http.ResponseWriter, r *http.Request) *Error {
+	m.Lock()
+	defer m.Unlock()
+	mshare := users[u]
+	type tres struct {
+		Symbol string
+		Shares int
+	}
+	res := make([]tres, 0, len(mshare))
+	for k, v := range mshare {
+		res = append(res, tres{k, v})
+	}
+	sort.Slice(res, func(i, j int) bool { return res[i].Symbol < res[j].Symbol })
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		return internalServerError
+	}
+	return nil
+}
+
 func (t *trades) auth(m *sync.Mutex, users map[uuid.UUID]map[string]int, w http.ResponseWriter, r *http.Request) *Error {
 	m.Lock()
 	defer m.Unlock()
@@ -177,6 +196,8 @@ func (t *trades) v2(w http.ResponseWriter, r *http.Request) *Error {
 		return t.buy(u, t.v2mux, t.v2users, w, r)
 	case "sell":
 		return t.sell(u, t.v2mux, t.v2users, w, r)
+	case "holdings":
+		return t.holdings(u, t.v2mux, t.v2users, w, r)
 	case "auth":
 		return t.auth(t.v2mux, t.v2users, w, r)
 	default:
@@ -211,6 +232,8 @@ func (t *trades) v3(w http.ResponseWriter, r *http.Request) *Error {
 		return t.buy(u, t.v3mux, t.v3users, w, r)
 	case "sell":
 		return t.sell(u, t.v3mux, t.v3users, w, r)
+	case "holdings":
+		return t.holdings(u, t.v3mux, t.v3users, w, r)
 	case "auth":
 		return t.auth(t.v3mux, t.v3users, w, r)
 	default:
