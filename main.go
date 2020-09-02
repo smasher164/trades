@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"io"
@@ -21,6 +22,8 @@ import (
 	"github.com/ericlagergren/decimal"
 	"github.com/google/uuid"
 )
+
+var site = flag.String("site", "www.stocks.akhil.cc", "primary host name for site")
 
 type html struct {
 	Title   string
@@ -221,6 +224,9 @@ var unauthorized = &Error{http.StatusUnauthorized, "Unknown User"}
 var badRequest = &Error{http.StatusBadRequest, "Invalid Request"}
 
 func (t *trades) Handle(w http.ResponseWriter, r *http.Request) *Error {
+	if r.Host != *site {
+		return notFound
+	}
 	switch shift(r.URL) {
 	case "v1":
 		return t.v1(w, r)
@@ -228,6 +234,9 @@ func (t *trades) Handle(w http.ResponseWriter, r *http.Request) *Error {
 		return t.v2(w, r)
 	case "v3":
 		return t.v3(w, r)
+	case "favicon.ico":
+		w.Header().Set("Content-Type", "image/x-icon")
+		return nil
 	default:
 		return t.template(w, html{"Stocks API", 0})
 	}
@@ -327,6 +336,7 @@ func symbols(filename string) map[string]stock {
 }
 
 func main() {
+	flag.Parse()
 	log.Fatal(http.ListenAndServe(":8080", &trades{
 		frame:   template.Must(template.ParseFiles("frame.tmpl")),
 		stocks:  symbols("nasdaq.csv"),
