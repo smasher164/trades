@@ -69,6 +69,10 @@ type trades struct {
 func (t *trades) list(w http.ResponseWriter, r *http.Request) *Error {
 	values := make([]stock, 0, len(t.stocks))
 	for _, v := range t.stocks {
+		norm := decimal.New(0, 0).SetFloat64(rand.NormFloat64())
+		stddev := decimal.New(1, 0)
+		norm = norm.Mul(norm, stddev)
+		v.Price.Big = norm.Add(norm, v.Price.Big)
 		values = append(values, v)
 	}
 	sort.Slice(values, func(i, j int) bool { return values[i].Symbol < values[j].Symbol })
