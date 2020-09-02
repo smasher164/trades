@@ -5,7 +5,8 @@
 
 # Whitelist the following files and extensions
 !*.go
-!*.md
+!README
+!LICENSE
 !.gitignore
 !go.mod
 !go.sum
