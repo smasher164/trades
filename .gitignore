@@ -5,6 +5,7 @@
 
 # Whitelist the following files and extensions
 !*.go
+!*.csv
 !README
 !LICENSE
 !.gitignore
