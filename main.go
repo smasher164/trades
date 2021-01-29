@@ -280,6 +280,7 @@ func (t *trades) template(w http.ResponseWriter, h html) *Error {
 
 func (t *trades) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if err := t.Handle(w, r); err != nil {
 		w.WriteHeader(err.Status)
 		res := map[string]string{"Error": err.Msg}
