@@ -52,9 +52,9 @@ func shift(u *url.URL) string {
 }
 
 type stock struct {
-	Symbol    string
-	Price     *money
-	MarketCap string
+	Symbol    string `json:"symbol"`
+	Price     *money `json:"price"`
+	MarketCap string `json:"marketCap"`
 }
 
 type trades struct {
@@ -128,8 +128,8 @@ func (t *trades) holdings(u uuid.UUID, m *sync.Mutex, users map[uuid.UUID]map[st
 	defer m.Unlock()
 	mshare := users[u]
 	type tres struct {
-		Symbol string
-		Shares int
+		Symbol string `json:"symbol"`
+		Shares int    `json:"shares"`
 	}
 	res := make([]tres, 0, len(mshare))
 	for k, v := range mshare {
@@ -145,7 +145,9 @@ func (t *trades) holdings(u uuid.UUID, m *sync.Mutex, users map[uuid.UUID]map[st
 func (t *trades) auth(m *sync.Mutex, users map[uuid.UUID]map[string]int, w http.ResponseWriter, r *http.Request) *Error {
 	m.Lock()
 	defer m.Unlock()
-	res := struct{ Token uuid.UUID }{uuid.New()}
+	res := struct {
+		Token uuid.UUID `json:"token"`
+	}{uuid.New()}
 	users[res.Token] = make(map[string]int)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		return internalServerError
@@ -283,7 +285,7 @@ func (t *trades) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	if err := t.Handle(w, r); err != nil {
 		w.WriteHeader(err.Status)
-		res := map[string]string{"Error": err.Msg}
+		res := map[string]string{"error": err.Msg}
 		json.NewEncoder(w).Encode(res)
 	}
 }
